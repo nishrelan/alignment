@@ -1,0 +1,6 @@
+hidden_nodes: 10000
+activation: "relu"
+approx: [-1]
+
+defaults:
+  - optimizer: sgd

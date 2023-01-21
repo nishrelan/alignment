@@ -1,0 +1,16 @@
+alpha: 1e-6
+data:
+  num_train: 250
+  num_test: 100
+  dim: 5
+batch_size: -1
+epochs: 500
+
+
+
+
+defaults:
+  - _self_
+  - model/config
+  - metrics/config
+    
