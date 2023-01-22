@@ -11,12 +11,11 @@ import sys
 from align.utils.comp import print_tree
 
 
-
+def get_ntk_fn(apply_fun):
+    ntk_fn = nt.empirical_kernel_fn(apply_fun, vmap_axes=0)
+    return ntk_fn
 
 def energy_concentration_fun(model, batch, params, k):
-    def get_ntk_fn(apply_fun):
-        ntk_fn = nt.empirical_kernel_fn(apply_fun, vmap_axes=0)
-        return ntk_fn
 
     def eigen_decomposition(ntk_fn, data, params, k=50):
         graham_matrix = ntk_fn(data, None, "ntk", params)
@@ -33,6 +32,17 @@ def energy_concentration_fun(model, batch, params, k):
     ntk_fn = get_ntk_fn(model.apply)
     _, eigvecs = eigen_decomposition(ntk_fn, xb, params, k)
     return energy_concentration(eigvecs, yb)
+
+def get_normed_alignment_fn(model):
+
+    def fn(params, batch):
+        xb, yb = batch
+        ntk_fn = get_ntk_fn(model.apply)
+        graham_matrix = ntk_fn(xb, None, "ntk", params)
+        assert len(graham_matrix.shape) == 2
+        return (jnp.transpose(yb) @ graham_matrix @ yb) / (jnp.linalg.norm(yb)**2 * jnp.linalg.norm(graham_matrix))
+    
+    return fn
 
 
 

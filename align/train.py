@@ -7,13 +7,22 @@ import sys
 # Full gradient descent (only one batch)
 def train(params, opt_state, train_step_fn, train_loader, test_loader, acc_fn, num_epochs, metrics):
     results = {m.name: [] for m in metrics}
-    for epoch in range(1, num_epochs + 1):
+    results['train_acc'] = []
+    results['test_acc'] = []
+    for epoch in range(num_epochs + 1):
         
         batch = next(iter(train_loader))
-        epoch_loss, params, opt_state = train_step_fn(params, opt_state, batch)
+        test_batch = next(iter(test_loader))
+        # Record metrics for initial params as well
+        if epoch != 0:
+            epoch_loss, params, opt_state = train_step_fn(params, opt_state, batch)
         epoch_acc = acc_fn(params, batch)
-
-        print("Epoch: {} Loss: {} Acc: {}".format(epoch, epoch_loss, epoch_acc))
+        test_acc = acc_fn(params, test_batch)
+        results['train_acc'].append((epoch_acc, epoch))
+        results['test_acc'].append((test_acc, epoch))
+        
+        if epoch != 0:
+            print("Epoch: {} Loss: {} Acc: {}".format(epoch, epoch_loss, epoch_acc))
 
         for metric in metrics:
             if metric.interval and epoch % metric.interval == 0:
