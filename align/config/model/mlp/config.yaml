@@ -1,6 +1,5 @@
 layers: [100, 300, 100]
 activation: "relu"
-approx: [-1]
 
 
 defaults:

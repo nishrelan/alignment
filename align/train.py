@@ -40,7 +40,7 @@ def get_hinge_loss(model, init_params, alpha):
     @jax.jit
     def hinge_loss(params, batch):
         xb, yb = batch
-        preds = alpha*(model.apply(params, xb) - model.apply(init_params, xb))
+        preds = alpha*(model(params, xb) - model(init_params, xb))
         preds = jnp.ravel(preds)
         preds = 1 - yb*preds
         return jnp.mean(jnp.where(preds < 0, 0, preds)) / alpha
@@ -66,7 +66,7 @@ def make_acc_fn(model, init_params, alpha):
     @jax.jit
     def acc(params, batch):
         xb, yb = batch
-        raw_preds = alpha*(model.apply(params, xb) - model.apply(init_params, xb))
+        raw_preds = alpha*(model(params, xb) - model(init_params, xb))
         raw_preds = jnp.ravel(raw_preds)
         preds = jnp.where(raw_preds > 0, 1, -1)
         return jnp.mean(preds == yb)
@@ -76,7 +76,7 @@ def make_acc_fn(model, init_params, alpha):
 
 # TODO: make functional
 def predict(alpha, model, params, init_params, xb):
-    raw_preds = alpha*(model.apply(params, xb) - model.apply(init_params, xb))
+    raw_preds = alpha*(model(params, xb) - model(init_params, xb))
     raw_preds = jnp.ravel(raw_preds)
     preds = jnp.where(raw_preds > 0, 1, -1)
     return preds, raw_preds

@@ -4,7 +4,8 @@ import jax.numpy as jnp
 import optax
 
 
-
+def tuple_split(thing):
+    return map(list, zip(*thing))
 
 def print_tree(pytree):
     print(

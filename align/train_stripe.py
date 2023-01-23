@@ -1,7 +1,7 @@
 from align.models.mlp import create_two_layer
 from align.data.stripe import generate_data
 from align.train import get_hinge_loss, get_update_fun, make_acc_fn, train
-from utils.comp import random_labels
+from utils.comp import random_labels, tuple_split
 from utils.config import *
 from align.alignment_metrics import energy_concentration_fun, get_ntk_alignment_fn, get_normed_alignment_fn
 
@@ -12,6 +12,7 @@ import optax
 import numpy as np
 import sys
 from neural_tangents import taylor_expand
+import matplotlib.pyplot as plt
 
 from omegaconf import DictConfig, OmegaConf
 import hydra
@@ -44,12 +45,12 @@ def main(config):
     model, init_params, optimizer, init_opt_state = get_model_and_optimizer(
         config.model[model_name], model_name, key2, x
     )
-    hinge_loss = get_hinge_loss(model, init_params, alpha=config.alpha)
-    acc_fn = make_acc_fn(model, init_params, alpha=config.alpha)
+    hinge_loss = get_hinge_loss(model.apply, init_params, alpha=config.alpha)
+    acc_fn = make_acc_fn(model.apply, init_params, alpha=config.alpha)
     train_step_fn = get_update_fun(optimizer, hinge_loss)
 
     # Approximation
-    lin = taylor_expand(model.apply, init_params, degree=1)
+    lin = taylor_expand(model.apply, init_params, degree=2)
     lin_hinge_loss = get_hinge_loss(lin, init_params, alpha=config.alpha)
     lin_acc_fn = make_acc_fn(lin, init_params, alpha=config.alpha)
     lin_init_opt_state = optimizer.init(init_params)
@@ -57,8 +58,8 @@ def main(config):
 
 
     metrics = [
-        Metric('energy', partial(energy_concentration_fun, model=model, k=8), config.metrics.energy_concentration),
-        Metric('normed_alignment', get_normed_alignment_fn(model), config.metrics.normed_alignment)
+        Metric('energy', partial(energy_concentration_fun, model=model.apply, k=8), config.metrics.energy_concentration),
+        Metric('normed_alignment', get_normed_alignment_fn(model.apply), config.metrics.normed_alignment)
     ]
 
 
@@ -73,9 +74,19 @@ def main(config):
     )
 
     
-    
+    accs, epochs = tuple_split(results['test_acc'])
+    lin_accs, lin_epochs = tuple_split(lin_results['test_acc'])
 
+    # plt.plot(epochs, accs, label='full model')
+    # plt.plot(lin_epochs, lin_accs, label='linear model')
+    # plt.savefig('acc_curve1.png')
 
+    plt.clf()
+    energies, epochs = tuple_split(results['normed_alignment'])
+    lin_energies, lin_epochs = tuple_split(lin_results['normed_alignment'])
+    plt.plot(epochs, energies, label='full_model')
+    plt.plot(lin_epochs, lin_energies, label='quad_model')
+    plt.savefig('alignment_curve.png')
 
 
 
@@ -85,5 +96,3 @@ def main(config):
 
 if __name__ == '__main__':
     main()
-
-

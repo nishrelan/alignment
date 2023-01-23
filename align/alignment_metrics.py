@@ -29,7 +29,7 @@ def energy_concentration_fun(model, batch, params, k):
 
     
     xb, yb = batch
-    ntk_fn = get_ntk_fn(model.apply)
+    ntk_fn = get_ntk_fn(model)
     _, eigvecs = eigen_decomposition(ntk_fn, xb, params, k)
     return energy_concentration(eigvecs, yb)
 
@@ -37,7 +37,7 @@ def get_normed_alignment_fn(model):
 
     def fn(params, batch):
         xb, yb = batch
-        ntk_fn = get_ntk_fn(model.apply)
+        ntk_fn = get_ntk_fn(model)
         graham_matrix = ntk_fn(xb, None, "ntk", params)
         assert len(graham_matrix.shape) == 2
         return (jnp.transpose(yb) @ graham_matrix @ yb) / (jnp.linalg.norm(yb)**2 * jnp.linalg.norm(graham_matrix))
@@ -50,7 +50,7 @@ def get_ntk_alignment_fn(model):
     
     def compute_alignment(batch, params):
         xb, yb = batch
-        jac = jax.jacrev(partial(model.apply, x=xb))(params)
+        jac = jax.jacrev(partial(model, x=xb))(params)
         assert(len(yb.shape) == 1)
         # 1. scale each gradient and sum along data axis
         scaled = jax.tree_map(lambda x: jnp.einsum('i, ij... -> ...', yb, x) / len(yb), jac)
