@@ -1,7 +1,7 @@
 from align.models.mlp import create_two_layer
 from align.data.stripe import generate_data
 from align.train import get_hinge_loss, get_update_fun, make_acc_fn, train
-from utils.comp import random_labels, tuple_split
+from utils.comp import random_labels, tuple_split, print_tree
 from utils.config import *
 from align.alignment_metrics import energy_concentration_fun, get_ntk_alignment_fn, get_normed_alignment_fn
 
@@ -13,9 +13,11 @@ import numpy as np
 import sys
 from neural_tangents import taylor_expand
 import matplotlib.pyplot as plt
+from inspect import signature
 
 from omegaconf import DictConfig, OmegaConf
 import hydra
+import os
 
 
 class Metric:
@@ -41,7 +43,7 @@ def main(config):
 
 
     # Full paper model
-    model_name = 'paper'
+    model_name = 'mlp'
     model, init_params, optimizer, init_opt_state = get_model_and_optimizer(
         config.model[model_name], model_name, key2, x
     )
@@ -77,15 +79,17 @@ def main(config):
     accs, epochs = tuple_split(results['test_acc'])
     lin_accs, lin_epochs = tuple_split(lin_results['test_acc'])
 
-    # plt.plot(epochs, accs, label='full model')
-    # plt.plot(lin_epochs, lin_accs, label='linear model')
-    # plt.savefig('acc_curve1.png')
+    plt.plot(epochs, accs, label='full model')
+    plt.plot(lin_epochs, lin_accs, label='quad')
+    plt.legend()
+    plt.savefig('acc_curve1.png')
 
     plt.clf()
     energies, epochs = tuple_split(results['normed_alignment'])
     lin_energies, lin_epochs = tuple_split(lin_results['normed_alignment'])
     plt.plot(epochs, energies, label='full_model')
     plt.plot(lin_epochs, lin_energies, label='quad_model')
+    plt.legend()
     plt.savefig('alignment_curve.png')
 
 

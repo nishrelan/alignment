@@ -2,12 +2,14 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 from functools import partial
+import sys
 
 
 class MLP(hk.Module):
     def __init__(self, output_sizes, activation_fn):
         super().__init__()
-        self.mlp = hk.nets.MLP(output_sizes=output_sizes, activation=activation_fn)
+        self.output_sizes = output_sizes + [1]
+        self.mlp = hk.nets.MLP(output_sizes=self.output_sizes, activation=activation_fn)
 
     def __call__(self, x):
         return self.mlp(x)

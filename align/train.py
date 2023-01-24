@@ -35,6 +35,17 @@ def train(params, opt_state, train_step_fn, train_loader, test_loader, acc_fn, n
 
 
 
+def get_mse_loss(model, init_params, alpha):
+
+    def mse_loss(params, batch):
+        xb, yb = batch
+        preds = alpha*(model(params, xb) - model(init_params, xb))
+        preds = jnp.ravel(preds)
+        loss = jnp.mean((yb - preds)**2)
+        assert isinstance(loss, jnp.float32)
+        return loss
+
+
 def get_hinge_loss(model, init_params, alpha):
     
     @jax.jit

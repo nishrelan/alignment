@@ -8,6 +8,12 @@ from align.models.mlp import *
 def get_activation(act_str):
     if act_str == "relu":
         return jax.nn.relu
+    elif act_str == "sigmoid":
+        return jax.nn.sigmoid
+    elif act_str == "selu":
+        return jax.nn.selu
+    elif act_str == "tanh":
+        return jax.nn.tanh
     else:
         raise NotImplementedError
 
@@ -37,6 +43,7 @@ def get_model_and_optimizer(config, name, rng, sample_data):
             rng, sample_data, config.layers, get_activation(config.activation)
         )
         optimizer = get_optimizer(config.optimizer.type, **config.optimizer.spec)
+        init_opt_state = optimizer.init(init_params)
         return model, init_params, optimizer, init_opt_state
     else:
         raise NotImplementedError

@@ -1,4 +1,4 @@
-layers: [100, 300, 100]
+layers: [300, 100]
 activation: "relu"
 
 
