@@ -64,6 +64,11 @@ def main(config):
         Metric('normed_alignment', get_normed_alignment_fn(model.apply), config.metrics.normed_alignment)
     ]
 
+    lin_metrics = [
+        Metric('energy', partial(energy_concentration_fun, model=lin, k=8), config.metrics.energy_concentration),
+        Metric('normed_alignment', get_normed_alignment_fn(lin), config.metrics.normed_alignment)
+    ]
+
 
     results, final_params, final_opt_state = train(
         init_params, init_opt_state, train_step_fn, train_loader, 
@@ -72,7 +77,7 @@ def main(config):
 
     lin_results, _, _ = train(
         init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
-        test_loader, lin_acc_fn, config.epochs, metrics
+        test_loader, lin_acc_fn, config.epochs, lin_metrics
     )
 
     
