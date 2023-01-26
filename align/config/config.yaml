@@ -1,5 +1,6 @@
 info: ""
 model_name: "paper"
+loss: "hinge"
 alpha: 1e-3
 data:
   num_train: 250

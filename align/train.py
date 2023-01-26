@@ -55,7 +55,6 @@ def get_hinge_loss(model, init_params, alpha):
         preds = jnp.ravel(preds)
         preds = 1 - yb*preds
         return jnp.mean(jnp.where(preds < 0, 0, preds)) / alpha
- 
     
     return hinge_loss
 
