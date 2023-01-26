@@ -43,7 +43,7 @@ def main(config):
 
 
     # Full paper model
-    model_name = 'mlp'
+    model_name = config.model_name
     model, init_params, optimizer, init_opt_state = get_model_and_optimizer(
         config.model[model_name], model_name, key2, x
     )
@@ -59,43 +59,66 @@ def main(config):
     lin_train_step_fn = get_update_fun(optimizer, lin_hinge_loss)
 
 
+
+
     metrics = [
         Metric('energy', partial(energy_concentration_fun, model=model.apply, k=8), config.metrics.energy_concentration),
-        Metric('normed_alignment', get_normed_alignment_fn(model.apply), config.metrics.normed_alignment)
+        Metric('normed_alignment', get_normed_alignment_fn(model.apply), config.metrics.normed_alignment),
+        Metric('test_loss', hinge_loss, 1)
     ]
 
     lin_metrics = [
         Metric('energy', partial(energy_concentration_fun, model=lin, k=8), config.metrics.energy_concentration),
-        Metric('normed_alignment', get_normed_alignment_fn(lin), config.metrics.normed_alignment)
+        Metric('normed_alignment', get_normed_alignment_fn(lin), config.metrics.normed_alignment),
+        Metric('test_loss', lin_hinge_loss, 1)
     ]
 
 
-    results, final_params, final_opt_state = train(
+    lin_results, _, _ = train(
+            init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
+            test_loader, lin_acc_fn, config.epochs, lin_metrics
+        )
+
+    results, _, _ = train(
         init_params, init_opt_state, train_step_fn, train_loader, 
         test_loader, acc_fn, num_epochs=config.epochs, metrics=metrics
     )
 
-    lin_results, _, _ = train(
-        init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
-        test_loader, lin_acc_fn, config.epochs, lin_metrics
-    )
+    
 
     
+    losses, epochs = tuple_split(results['test_loss'])
+    lin_losses, lin_epochs = tuple_split(lin_results['test_loss'])
+    plt.clf()
+    plt.plot(epochs, losses, label='full model')
+    plt.plot(lin_epochs, lin_losses, label='quad')
+    plt.legend()
+    plt.savefig('test_loss.png')
+
     accs, epochs = tuple_split(results['test_acc'])
     lin_accs, lin_epochs = tuple_split(lin_results['test_acc'])
-
+    plt.clf()
     plt.plot(epochs, accs, label='full model')
     plt.plot(lin_epochs, lin_accs, label='quad')
     plt.legend()
-    plt.savefig('acc_curve1.png')
+    plt.savefig('test_acc.png')
 
+    
+    alignments, epochs = tuple_split(results['normed_alignment'])
+    lin_alignments, lin_epochs = tuple_split(lin_results['normed_alignment'])
     plt.clf()
-    energies, epochs = tuple_split(results['normed_alignment'])
-    lin_energies, lin_epochs = tuple_split(lin_results['normed_alignment'])
-    plt.plot(epochs, energies, label='full_model')
-    plt.plot(lin_epochs, lin_energies, label='quad_model')
+    plt.plot(epochs, alignments, label='full_model')
+    plt.plot(lin_epochs, lin_alignments, label='quad_model')
     plt.legend()
     plt.savefig('alignment_curve.png')
+
+    energies, epochs = tuple_split(results['energy'])
+    lin_energies, epochs = tuple_split(lin_results['energy'])
+    plt.clf()
+    plt.plot(epochs, energies, label="full_model")
+    plt.plot(epochs, lin_energies, label="quad_model")
+    plt.legend()
+    plt.savefig('energy (k={})'.format(8))
 
 
 

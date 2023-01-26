@@ -3,7 +3,17 @@ from jax.tree_util import tree_map
 import jax.numpy as jnp
 import optax
 from align.models.mlp import *
+from align.train import *
+from neural_tangents import taylor_expand
 
+
+def get_loss(loss_str, model, init_params, alpha):
+    if loss_str == 'hinge':
+        return get_hinge_loss(model, init_params, alpha)
+    elif loss_str == "mse":
+        return get_mse_loss(model, init_params, alpha)
+    else:
+        return NotImplementedError
 
 def get_activation(act_str):
     if act_str == "relu":
@@ -47,5 +57,6 @@ def get_model_and_optimizer(config, name, rng, sample_data):
         return model, init_params, optimizer, init_opt_state
     else:
         raise NotImplementedError
+
 
         
