@@ -42,8 +42,9 @@ def get_mse_loss(model, init_params, alpha):
         preds = alpha*(model(params, xb) - model(init_params, xb))
         preds = jnp.ravel(preds)
         loss = jnp.mean((yb - preds)**2)
-        assert isinstance(loss, jnp.float32)
         return loss
+    
+    return mse_loss
 
 
 def get_hinge_loss(model, init_params, alpha):
