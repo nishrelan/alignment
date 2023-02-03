@@ -1,5 +1,5 @@
 from align.models.mlp import create_two_layer
-from align.data.stripe import generate_data
+from align.data.polynomial import generate_data
 from align.train import get_hinge_loss, get_update_fun, make_acc_fn, train
 from utils.comp import random_labels, tuple_split, print_tree
 from utils.config import *
@@ -128,25 +128,25 @@ def main(config):
     plt.savefig('test_acc.png')
 
     
-    alignments, epochs = tuple_split(results['normed_alignment'])
-    lin_alignments, lin_epochs = tuple_split(lin_results['normed_alignment'])
-    quad_alignments, quad_epochs = tuple_split(quad_results['normed_alignment'])
-    plt.clf()
-    plt.plot(epochs, alignments, label='full model')
-    plt.plot(lin_epochs, lin_alignments, label='lin')
-    plt.plot(quad_epochs, quad_alignments, label='quad')
-    plt.legend()
-    plt.savefig('alignment_curve.png')
+    # alignments, epochs = tuple_split(results['normed_alignment'])
+    # lin_alignments, lin_epochs = tuple_split(lin_results['normed_alignment'])
+    # quad_alignments, quad_epochs = tuple_split(quad_results['normed_alignment'])
+    # plt.clf()
+    # plt.plot(epochs, alignments, label='full model')
+    # plt.plot(lin_epochs, lin_alignments, label='lin')
+    # plt.plot(quad_epochs, quad_alignments, label='quad')
+    # plt.legend()
+    # plt.savefig('alignment_curve.png')
 
-    energies, epochs = tuple_split(results['energy'])
-    lin_energies, lin_epochs = tuple_split(lin_results['energy'])
-    quad_energies, quad_epochs = tuple_split(quad_results['energy'])
-    plt.clf()
-    plt.plot(epochs, energies, label="full model")
-    plt.plot(lin_epochs, lin_energies, label="lin")
-    plt.plot(quad_epochs, quad_energies, label='quad')
-    plt.legend()
-    plt.savefig('energy (k={})'.format(8))
+    # energies, epochs = tuple_split(results['energy'])
+    # lin_energies, lin_epochs = tuple_split(lin_results['energy'])
+    # quad_energies, quad_epochs = tuple_split(quad_results['energy'])
+    # plt.clf()
+    # plt.plot(epochs, energies, label="full model")
+    # plt.plot(lin_epochs, lin_energies, label="lin")
+    # plt.plot(quad_epochs, quad_energies, label='quad')
+    # plt.legend()
+    # plt.savefig('energy (k={})'.format(8))
 
 
 
