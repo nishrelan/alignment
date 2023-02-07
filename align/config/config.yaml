@@ -1,10 +1,11 @@
 info: ""
+rng_seed: 0
 model_name: "paper"
 loss: "hinge"
 alpha: 1e-3
 data:
   num_train: 250
-  num_test: 100
+  num_test: 500
   dim: 5
 batch_size: -1
 epochs: 500

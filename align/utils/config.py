@@ -57,16 +57,6 @@ def get_model_and_optimizer(config, name, rng, sample_data):
         raise NotImplementedError
 
 def setup_training(loss_str, alpha, apply_fn, init_params, optimizer):
-    """
-        Params:
-            model: pair of pure functions init and apply
-            init_params: PyTree of initial params
-            optimizer: Optax.GradientTransformation
-            approx: If None, will use original model, else will taylor approximate model to degree <approx>
-        Returns:
-            Loss function, acc function, init opt state, train step function
-    """
-    
     init_opt_state = optimizer.init(init_params)
     loss_fn = get_loss(loss_str, apply_fn, init_params, alpha)
     acc_fn = make_acc_fn(apply_fn, init_params, alpha)

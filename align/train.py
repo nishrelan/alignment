@@ -2,33 +2,45 @@ import jax
 import jax.numpy as jnp
 import optax
 import sys
+from functools import partial
+import logging
 
+log = logging.getLogger(__name__)
 
 # Full gradient descent (only one batch)
 def train(params, opt_state, train_step_fn, train_loader, test_loader, acc_fn, num_epochs, metrics):
     results = {m.name: [] for m in metrics}
     results['train_acc'] = []
     results['test_acc'] = []
+    results['train_loss'] = []
+    results['test_loss'] = []
     for epoch in range(num_epochs + 1):
         
         batch = next(iter(train_loader))
         test_batch = next(iter(test_loader))
-        # Record metrics for initial params as well
-        if epoch != 0:
-            epoch_loss, params, opt_state = train_step_fn(params, opt_state, batch)
-        epoch_acc = acc_fn(params, batch)
-        test_acc = acc_fn(params, test_batch)
-        results['train_acc'].append((epoch_acc, epoch))
-        results['test_acc'].append((test_acc, epoch))
-        
-        if epoch != 0:
-            print("Epoch: {} Loss: {} Acc: {}".format(epoch, epoch_loss, epoch_acc))
 
+        # Record metrics first and then update params at end of iteration
         for metric in metrics:
             if metric.interval and epoch % metric.interval == 0:
                 results[metric.name].append(
                     (metric.fun(params=params, batch=batch), epoch)
                 )
+
+        epoch_acc = acc_fn(params, batch)
+        test_acc = acc_fn(params, test_batch)
+        epoch_test_loss = train_step_fn(params, opt_state, test_batch, just_loss=True)
+        epoch_train_loss, params, opt_state = train_step_fn(params, opt_state, batch, just_loss=False)
+
+        results['train_acc'].append((epoch_acc, epoch))
+        results['test_acc'].append((test_acc, epoch))
+        results['train_loss'].append((epoch_train_loss, epoch))
+        results['test_loss'].append((epoch_test_loss, epoch))
+        
+        if epoch != 0:
+            log.info("Epoch: {} Train Loss: {} Test Loss: {} Train Acc: {} Test Acc: {}".format(
+                epoch, epoch_train_loss, epoch_test_loss, epoch_acc, test_acc))
+
+        
             
     
     return results, params, opt_state
@@ -61,8 +73,10 @@ def get_hinge_loss(model, init_params, alpha):
 
 def get_update_fun(optimizer, loss_fn):
 
-    @jax.jit
-    def train_step_fn(params, opt_state, batch):
+    @partial(jax.jit, static_argnames=['just_loss'])
+    def train_step_fn(params, opt_state, batch, just_loss=False):
+        if just_loss:
+            return loss_fn(params, batch)
         loss, grads = jax.value_and_grad(loss_fn)(params, batch)
         updates, opt_state = optimizer.update(grads, opt_state)
         new_params = optax.apply_updates(params, updates)

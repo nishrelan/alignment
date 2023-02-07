@@ -1,5 +1,5 @@
 from align.models.mlp import create_two_layer
-from align.data.polynomial import generate_data
+from align.data.stripe import generate_data
 from align.train import get_hinge_loss, get_update_fun, make_acc_fn, train
 from utils.comp import random_labels, tuple_split, print_tree
 from utils.config import *
@@ -18,6 +18,9 @@ from inspect import signature
 from omegaconf import DictConfig, OmegaConf
 import hydra
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class Metric:
@@ -33,7 +36,7 @@ def print_config(cfg):
 
 @hydra.main(version_base=None, config_path="./config", config_name="config")
 def main(config):
-    seed = jax.random.PRNGKey(1)
+    seed = jax.random.PRNGKey(config.rng_seed)
     key1, key2, key3, key4, key5, splitter = split(seed, num=6)
 
     conf = config.data
@@ -68,36 +71,33 @@ def main(config):
     metrics = [
         Metric('energy', partial(energy_concentration_fun, model=model.apply, k=8), config.metrics.energy_concentration),
         Metric('normed_alignment', get_normed_alignment_fn(model.apply), config.metrics.normed_alignment),
-        Metric('test_loss', loss_fn, 1)
     ]
 
     lin_metrics = [
         Metric('energy', partial(energy_concentration_fun, model=lin, k=8), config.metrics.energy_concentration),
         Metric('normed_alignment', get_normed_alignment_fn(lin), config.metrics.normed_alignment),
-        Metric('test_loss', lin_loss_fn, 1)
     ]
 
     quad_metrics = [
         Metric('energy', partial(energy_concentration_fun, model=quad, k=8), config.metrics.energy_concentration),
         Metric('normed_alignment', get_normed_alignment_fn(quad), config.metrics.normed_alignment),
-        Metric('test_loss', quad_loss_fn, 1)
     ]
 
 
 
-    print("Training full model...")
+    log.info("Training full model...")
     results, _, _ = train(
         init_params, init_opt_state, train_step_fn, train_loader, 
         test_loader, acc_fn, num_epochs=config.epochs, metrics=metrics
     )
 
-    print("Training linear approximation...")
+    log.info("Training linear approximation...")
     lin_results, _, _ = train(
         init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
         test_loader, lin_acc_fn, config.epochs, lin_metrics
     )
 
-    print("Training quadratic approximation")
+    log.info("Training quadratic approximation")
     quad_results, _, _ = train(
         init_params, quad_init_opt_state, quad_train_step_fn,
         train_loader, test_loader, quad_acc_fn,
