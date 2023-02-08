@@ -30,6 +30,8 @@ def get_activation(act_str):
 def get_optimizer(opt_str, **kwargs):
     if opt_str == "sgd":
         return optax.sgd(**kwargs)
+    elif opt_str == "adam":
+        return optax.adam(**kwargs)
     else:
         raise NotImplementedError
 

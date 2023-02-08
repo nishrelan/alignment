@@ -29,12 +29,12 @@ class Metric:
         self.fun  = metric_fn
         self.interval = interval
 
-@hydra.main(version_base=None, config_path="./config", config_name="config")
+@hydra.main(version_base=None, config_path="./config/mlp_config", config_name="config")
 def print_config(cfg):
     print(OmegaConf.to_yaml(cfg['model']))
 
 
-@hydra.main(version_base=None, config_path="./config", config_name="config")
+@hydra.main(version_base=None, config_path="./config/mlp_config", config_name="config")
 def main(config):
     seed = jax.random.PRNGKey(config.rng_seed)
     key1, key2, key3, key4, key5, splitter = split(seed, num=6)
