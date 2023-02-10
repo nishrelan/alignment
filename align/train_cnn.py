@@ -8,6 +8,8 @@ import os
 import sys
 import logging
 from jax.random import split
+from neural_tangents import taylor_expand
+import inspect
 
 
 from align.utils.comp import print_tree
@@ -18,7 +20,8 @@ from align.train_with_state import *
 
 log = logging.getLogger(__name__)
 
-
+def make_variables(params, model_state):
+    return {"params": params, **model_state}
 
 @hydra.main(version_base=None, config_path="./config/cnn_config", config_name="config")
 def main(config):
@@ -35,6 +38,7 @@ def main(config):
     xent_loss_fn, acc_fn = get_xent_loss_acc(model.apply)
     train_step_fn = get_train_step_fn(optimizer, xent_loss_fn)
 
+    
 
     log.info("Training VGG11 on CIFAR10...")
     results, _, _, _ = train(

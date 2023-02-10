@@ -127,6 +127,26 @@ def main(config):
     plt.legend()
     plt.savefig('test_acc.png')
 
+    accs, epochs = tuple_split(results['train_acc'])
+    lin_accs, lin_epochs = tuple_split(lin_results['train_acc'])
+    quad_accs, quad_epochs = tuple_split(quad_results['train_acc'])
+    plt.clf()
+    plt.plot(epochs, accs, label='full model')
+    plt.plot(lin_epochs, lin_accs, label='lin')
+    plt.plot(quad_epochs, quad_accs, label='quad')
+    plt.legend()
+    plt.savefig('train_acc.png')
+
+    accs, epochs = tuple_split(results['train_loss'])
+    lin_accs, lin_epochs = tuple_split(lin_results['train_loss'])
+    quad_accs, quad_epochs = tuple_split(quad_results['train_loss'])
+    plt.clf()
+    plt.plot(epochs, accs, label='full model')
+    plt.plot(lin_epochs, lin_accs, label='lin')
+    plt.plot(quad_epochs, quad_accs, label='quad')
+    plt.legend()
+    plt.savefig('train_loss.png')
+
     
     # alignments, epochs = tuple_split(results['normed_alignment'])
     # lin_alignments, lin_epochs = tuple_split(lin_results['normed_alignment'])
