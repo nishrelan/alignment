@@ -16,7 +16,8 @@ from align.utils.comp import print_tree
 from align.utils.config import get_optimizer
 from align.data.cifar10 import get_cifar10
 from align.models.cnn import create_model
-from align.train_with_state import *
+from align.batch_train import *
+from align.train import get_update_fun
 
 log = logging.getLogger(__name__)
 
@@ -32,17 +33,17 @@ def main(config):
     xb, yb = next(iter(train_loader))
 
 
-    model, init_params, init_state = create_model('vgg11', config.architecture, key1, xb)
+    model, init_params = create_model('vgg11', config.architecture, key1, xb, use_bn=False)
     optimizer = get_optimizer(config.optimizer.type, **config.optimizer.spec)
     init_opt_state = optimizer.init(init_params)
     xent_loss_fn, acc_fn = get_xent_loss_acc(model.apply)
-    train_step_fn = get_train_step_fn(optimizer, xent_loss_fn)
+    train_step_fn = get_update_fun(optimizer, xent_loss_fn)
 
     
 
     log.info("Training VGG11 on CIFAR10...")
-    results, _, _, _ = train(
-        init_params, init_state, init_opt_state, train_step_fn,
+    results, _, _ = train(
+        init_params, init_opt_state, train_step_fn,
         train_loader, test_loader, xent_loss_fn, acc_fn,
         num_iters=config.epochs
     )

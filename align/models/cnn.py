@@ -25,7 +25,7 @@ class ConvLayer(hk.Module):
         return x
 
 class CNN(hk.Module):
-    def __init__(self, name, architecture, data_format='NCHW'):
+    def __init__(self, name, architecture, data_format='NCHW', use_bn=True):
         if name is None:
             super().__init__()
         else:
@@ -35,7 +35,7 @@ class CNN(hk.Module):
         self.layers = []
         for i, layer in enumerate(architecture):
             if isinstance(layer, int):
-                self.layers.append(ConvLayer(None, layer, (3, 3)))
+                self.layers.append(ConvLayer(None, layer, (3, 3), use_bn=use_bn))
             elif layer == 'M':
                 self.layers.append(hk.MaxPool(window_shape=2, strides=2, padding='VALID', channel_axis=channel_axis))
         
