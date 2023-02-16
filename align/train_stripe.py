@@ -94,7 +94,7 @@ def main(config):
     log.info("Training linear approximation...")
     lin_results, _, _ = train(
         init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
-        test_loader, lin_acc_fn, config.epochs, lin_metrics
+        test_loader, lin_acc_fn, 1, lin_metrics
     )
 
     log.info("Training quadratic approximation")
