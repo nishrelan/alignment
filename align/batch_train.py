@@ -37,7 +37,7 @@ def train(params, opt_state, train_step_fn, train_loader, test_loader, loss_fn, 
         test_loss = loss_fn(params, test_batch)
         train_loss, params, opt_state = train_step_fn(params, opt_state, train_batch)
 
-        log.info(
+        print(
             "Epoch: {} Train Loss: {} Test Loss: {} Train Acc: {} Test Acc: {}".format(
                 i, train_loss, test_loss, train_acc, test_acc
             )

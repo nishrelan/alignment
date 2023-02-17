@@ -21,8 +21,6 @@ from align.train import get_update_fun
 
 log = logging.getLogger(__name__)
 
-def make_variables(params, model_state):
-    return {"params": params, **model_state}
 
 @hydra.main(version_base=None, config_path="./config/cnn_config", config_name="config")
 def main(config):
