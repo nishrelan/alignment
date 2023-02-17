@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 
-def train(params, opt_state, train_step_fn, train_loader, test_loader, loss_fn, acc_fn, num_iters):
+def train(params, opt_state, train_step_fn, train_loader, test_loader, loss_fn, acc_fn, num_iters, print_iter=10):
     results = {
         'train_acc': [],
         'test_acc': [],
@@ -37,11 +37,12 @@ def train(params, opt_state, train_step_fn, train_loader, test_loader, loss_fn, 
         test_loss = loss_fn(params, test_batch)
         train_loss, params, opt_state = train_step_fn(params, opt_state, train_batch)
 
-        print(
-            "Epoch: {} Train Loss: {} Test Loss: {} Train Acc: {} Test Acc: {}".format(
-                i, train_loss, test_loss, train_acc, test_acc
+        if i % print_iter == 0:
+            print(
+                "Epoch: {} Train Loss: {} Test Loss: {} Train Acc: {} Test Acc: {}".format(
+                    i, train_loss, test_loss, train_acc, test_acc
+                )
             )
-        )
         results['train_acc'].append(train_acc)
         results['test_acc'].append(test_acc)
         results['test_loss'].append(test_loss)
