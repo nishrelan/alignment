@@ -88,20 +88,20 @@ def main(config):
     log.info("Training full model...")
     results, _, _ = train(
         init_params, init_opt_state, train_step_fn, train_loader, 
-        test_loader, acc_fn, num_epochs=1, metrics=metrics
+        test_loader, acc_fn, num_epochs=config.epochs, metrics=metrics
     )
 
     log.info("Training linear approximation...")
     lin_results, _, _ = train(
         init_params, lin_init_opt_state, lin_train_step_fn, train_loader,
-        test_loader, lin_acc_fn, config.epochs, lin_metrics
+        test_loader, lin_acc_fn, 1, lin_metrics
     )
 
     log.info("Training quadratic approximation")
     quad_results, _, _ = train(
         init_params, quad_init_opt_state, quad_train_step_fn,
         train_loader, test_loader, quad_acc_fn,
-        1, quad_metrics
+        config.epochs, quad_metrics
     )
 
     
