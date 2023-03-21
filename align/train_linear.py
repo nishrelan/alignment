@@ -71,15 +71,26 @@ def main(config):
 
     mse_loss = jax.jit(lambda fx, y_hat: 0.5 * np.mean((fx - y_hat) ** 2))
 
+    def accuracy(fx, y):
+        fx = jnp.ravel(fx)
+        y = jnp.ravel(y)
+        preds = jnp.where(fx > 0, 1, -1)
+        return jnp.mean(preds == y)
 
-    predictor = nt.predict.gradient_descent(hinge_loss, g_dd, jnp.expand_dims(y, axis=1), learning_rate=50000, momentum=0.9)
+    y = jnp.expand_dims(y, axis=1)
+    predictor = nt.predict.gradient_descent(hinge_loss, g_dd, y, learning_rate=1000000000, momentum=0.9)
     fx_train = f(init_params, x)
+    fx_test = f(init_params, x_test)
     training_steps = np.linspace(0, 1000, 10)
     print("Doing function space gradient descent...")
     start = time.time()
-    predictions = predictor(training_steps, fx_train)
+    train_preds, test_preds = predictor(training_steps, fx_train, fx_test, g_td)
     print("Time: {}".format(time.time() - start))
-    print(hinge_loss(predictions[-1], jnp.expand_dims(y, axis=1)))
+    print("Train loss: {}".format(hinge_loss(train_preds[-1], y)))
+    print("Test loss: {}".format(hinge_loss(test_preds[-1], y_test)))
+    print("Train acc: {}".format(accuracy(train_preds[-1], y)))
+    print("Test acc: {}".format(accuracy(test_preds[-1], y_test)))
+
 
 
     

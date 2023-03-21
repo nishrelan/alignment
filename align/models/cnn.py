@@ -2,6 +2,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 from functools import partial
+from neural_tangents import stax
 
 
 # Define network
@@ -68,3 +69,9 @@ def create_model(name, architecture, rng_key, sample_data, use_bn=True):
         model = hk.without_apply_rng(hk.transform(partial(cnn_forward_no_bn, name=name, architecture=architecture)))
         init_params = model.init(rng_key, sample_data)
         return model, init_params
+    
+def create_myrtle():
+    W_std = 1.0
+    b_std = 0.0
+    
+    

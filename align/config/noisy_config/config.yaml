@@ -1,0 +1,12 @@
+tau: 0
+approx: 0
+batch_size: 250
+num_epochs: 100
+
+
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: outputs/train_noisy/${now:%Y-%m-%d}/${now:%H-%M-%S}
